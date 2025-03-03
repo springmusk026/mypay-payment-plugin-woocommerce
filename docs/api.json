@@ -1,0 +1,316 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "MyPay Checkout API",
+        "description": "API for MyPay payment processing system that permits merchants to receive, manage and pay funds.",
+        "version": "1.2",
+        "contact": {
+            "email": "merchant@mypay.com.np"
+        }
+    },
+    "servers": [
+        {
+            "url": "https://stagingapi1.mypay.com.np",
+            "description": "Sandbox API Server"
+        },
+        {
+            "url": "https://smartdigitalnepal.com",
+            "description": "Production API Server"
+        }
+    ],
+    "paths": {
+        "/api/use-mypay-payments": {
+            "post": {
+                "summary": "Generate Order API",
+                "description": "Creates an order and payment link to be sent for payment after authentication",
+                "tags": [
+                    "Orders"
+                ],
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/api/use-mypay-payments-status": {
+            "post": {
+                "summary": "Check Transaction Status API",
+                "description": "Fetch the current status of an order using TransactionId",
+                "tags": [
+                    "Transactions"
+                ],
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/components/schemas/StatusRequestByMerchantTxnId"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/StatusRequestByGatewayTxnId"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "API_KEY",
+                "description": "API key obtained from merchant dashboard"
+            }
+        },
+        "schemas": {
+            "OrderRequest": {
+                "type": "object",
+                "required": [
+                    "Amount",
+                    "OrderId",
+                    "UserName",
+                    "Password",
+                    "MerchantId"
+                ],
+                "properties": {
+                    "Amount": {
+                        "type": "string",
+                        "description": "Transaction amount of the order which will be debited at the time of payment",
+                        "example": "100"
+                    },
+                    "OrderId": {
+                        "type": "string",
+                        "description": "Order ID of Merchant in numeric string format",
+                        "minLength": 6,
+                        "example": "112221150"
+                    },
+                    "UserName": {
+                        "type": "string",
+                        "description": "Merchant username provided by MyPay Admin",
+                        "example": "mypay"
+                    },
+                    "Password": {
+                        "type": "string",
+                        "description": "Merchant API password provided by MyPay Admin",
+                        "example": "NLZHXIWQIU6U567"
+                    },
+                    "MerchantId": {
+                        "type": "string",
+                        "description": "Unique Merchant ID provided by MyPay Admin",
+                        "example": "MER76689445"
+                    },
+                    "ReturnUrl": {
+                        "type": "string",
+                        "description": "URL of merchant where transaction response is expected to be posted by MyPay (optional)",
+                        "example": "https://mypay.com.np"
+                    }
+                }
+            },
+            "OrderResponse": {
+                "type": "object",
+                "properties": {
+                    "MerchantTransactionId": {
+                        "type": "string",
+                        "example": "210720220704044498293897245"
+                    },
+                    "RedirectURL": {
+                        "type": "string",
+                        "description": "URL that should be passed to the MyPay Portal for payment",
+                        "example": "https://staging1.mypay.com.np/MyPayPayments?OrderToken=N5LH49ji7A1idanH1CnhbNmIrgSjF6LP8G0P1RKQOANvf%2bFU3SH%2bSwcDdWHfxlKjqaFWmkxPoIhOEAXxFgp5TQ%3d%3d&mid=3I260%2bCSLP0Vc4XWOZ9fHA%3d%3d"
+                    },
+                    "Message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "responseMessage": {
+                        "type": "string",
+                        "example": ""
+                    },
+                    "Details": {
+                        "type": "string",
+                        "example": "Transaction Success Txn ID: 210720220704044498293897245"
+                    },
+                    "ReponseCode": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "ios_version": {
+                        "type": "string",
+                        "example": "9.3"
+                    },
+                    "AndroidVersion": {
+                        "type": "string",
+                        "example": "3.1.5"
+                    }
+                }
+            },
+            "StatusRequestByMerchantTxnId": {
+                "type": "object",
+                "required": [
+                    "MerchantTransactionId"
+                ],
+                "properties": {
+                    "MerchantTransactionId": {
+                        "type": "string",
+                        "description": "Merchant Transaction ID received from Generate Order API",
+                        "example": "210720220704044498293897245"
+                    }
+                }
+            },
+            "StatusRequestByGatewayTxnId": {
+                "type": "object",
+                "required": [
+                    "GatewayTransactionId"
+                ],
+                "properties": {
+                    "GatewayTransactionId": {
+                        "type": "string",
+                        "description": "Gateway Transaction ID received in return URL",
+                        "example": "26072022104346434668817121930"
+                    }
+                }
+            },
+            "StatusResponse": {
+                "type": "object",
+                "properties": {
+                    "MerchantTransactionId": {
+                        "type": "string",
+                        "example": "2507202201062762781754016475"
+                    },
+                    "MemberContactNumber": {
+                        "type": "string",
+                        "example": "8178642080"
+                    },
+                    "Status": {
+                        "type": "integer",
+                        "description": "Transaction status code",
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5
+                        ],
+                        "example": 1
+                    },
+                    "Remarks": {
+                        "type": "string",
+                        "example": "Order Completed for Contact no.8178642080"
+                    },
+                    "TrackerId": {
+                        "type": "string",
+                        "example": "2507202201091891834088151170"
+                    },
+                    "OrderId": {
+                        "type": "string",
+                        "example": "169899"
+                    },
+                    "Message": {
+                        "type": "string",
+                        "example": "Status Fetched Successfully"
+                    },
+                    "responseMessage": {
+                        "type": "string",
+                        "example": ""
+                    },
+                    "Details": {
+                        "type": "string",
+                        "example": "Status Fetched Successfully for Order ID:169899"
+                    },
+                    "ReponseCode": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "ios_version": {
+                        "type": "string",
+                        "example": "9.3"
+                    },
+                    "AndroidVersion": {
+                        "type": "string",
+                        "example": "3.1.5"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Orders",
+            "description": "Order creation and management"
+        },
+        {
+            "name": "Transactions",
+            "description": "Transaction status and history"
+        }
+    ],
+    "externalDocs": {
+        "description": "Find out more about MyPay",
+        "url": "https://mypay.com.np"
+    }
+}
